@@ -27,7 +27,6 @@
       overflow:hidden;
       position:relative;
     }
-    /* 星空背景 */
     .bg-stars{
       position:fixed;inset:0;
       background:radial-gradient(circle,rgba(255,255,255,.24) 1px,transparent 1px);
@@ -49,7 +48,6 @@
       z-index:0;
     }
 
-    /* 主容器 */
     .app-wrap{
       position:relative;
       z-index:2;
@@ -67,7 +65,6 @@
       }
     }
 
-    /* 左側角色預覽卡（靈體風） */
     .preview-column{
       flex:0 0 320px;
       display:flex;
@@ -93,6 +90,7 @@
       box-shadow:
         0 0 24px rgba(0,0,0,.9),
         0 0 32px rgba(91,228,255,.38);
+      transition:border-color .3s,box-shadow .3s;
     }
     .spirit-card::before{
       content:"LEVEL 23";
@@ -137,6 +135,7 @@
         drop-shadow(0 0 18px rgba(123,182,255,.8));
       opacity:.82;
       mix-blend-mode:screen;
+      transition:filter .3s,opacity .3s;
     }
     .spirit-glow-ring{
       position:absolute;
@@ -148,6 +147,7 @@
         0 0 40px rgba(255,200,135,.3);
       opacity:.85;
       animation:spiritRing 5.5s ease-in-out infinite;
+      transition:border-color .3s,box-shadow .3s;
     }
     @keyframes spiritRing{
       0%,100%{transform:scale(0.98);opacity:.7;}
@@ -181,7 +181,6 @@
     }
     .spirit-meta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-    /* 右側：各畫面（Intro / Login / Create / EntryCard） */
     .screen-column{
       flex:1;
       position:relative;
@@ -269,7 +268,6 @@
       margin-top:6px;
     }
 
-    /* Loading 條 */
     .loading-bar{
       margin-top:10px;
       height:10px;
@@ -291,7 +289,6 @@
       display:none;
     }
 
-    /* 能力值小區塊 */
     .stats-row{
       display:flex;
       gap:8px;
@@ -308,7 +305,6 @@
       text-align:center;
     }
 
-    /* 創角完成 HUD */
     .completion-overlay{
       position:fixed;
       inset:0;
@@ -327,6 +323,7 @@
       border:1px solid rgba(255,200,135,.9);
       box-shadow:0 0 26px rgba(255,200,135,.7),0 0 32px rgba(91,228,255,.7);
       background:linear-gradient(145deg,rgba(5,8,22,.96),rgba(10,18,40,.98));
+      transition:border-color .3s,box-shadow .3s;
     }
     .completion-avatar-wrap{
       width:90px;height:90px;
@@ -372,6 +369,7 @@
       background:linear-gradient(135deg,rgba(10,14,32,.98),rgba(4,6,20,.98));
       box-shadow:0 0 14px rgba(255,200,135,.65);
       font-size:12px;
+      transition:border-color .3s,box-shadow .3s;
     }
     .cmc-title{
       font-size:11px;
@@ -421,7 +419,6 @@
       border:none;
     }
 
-    /* Toast */
     #toast{
       position:fixed;
       bottom:18px;left:50%;
@@ -441,13 +438,13 @@
       transform:translateX(-50%) translateY(-4px);
     }
 
-    /* 角色卡頁面樣式 */
     .entry-card{
       padding:20px 18px 16px;
       border-radius:20px;
       background:linear-gradient(140deg,rgba(10,13,30,.96),rgba(4,5,18,.98));
       border:1px solid rgba(255,200,87,.9);
       box-shadow:0 0 26px rgba(0,0,0,.85),0 0 28px rgba(255,200,87,.55);
+      transition:border-color .3s,box-shadow .3s;
     }
     .entry-card-title{
       font-size:20px;
@@ -538,8 +535,6 @@
       cursor:pointer;
       font-size:12px;
     }
-
-    /* IG 按鈕 */
     .link-btn-ig{
       border-color:rgba(255,111,181,.8);
     }
@@ -550,15 +545,13 @@
   <div class="bg-tribal"></div>
 
   <div class="app-wrap">
-    <!-- 左：靈體風預設立繪 -->
     <div class="preview-column">
-      <div class="spirit-card">
+      <div class="spirit-card" id="spiritCard">
         <div class="spirit-orb"></div>
         <div class="spirit-portrait-wrap">
-          <!-- 若沒有上傳頭像，就顯示靈體預設 -->
           <img id="spiritPortrait" class="spirit-portrait" src="assets/characters/default.png" alt="spirit portrait" />
         </div>
-        <div class="spirit-glow-ring"></div>
+        <div class="spirit-glow-ring" id="spiritGlowRing"></div>
         <div class="spirit-particles"></div>
         <div class="spirit-meta">
           <span id="spiritName">未命名角色</span>
@@ -567,7 +560,6 @@
       </div>
     </div>
 
-    <!-- 右：各畫面 -->
     <div class="screen-column">
       <!-- Intro 畫面 -->
       <section id="screen-intro" class="screen active">
@@ -632,26 +624,26 @@
           <label>職業 / 身分</label>
           <select id="role">
             <option value="">請選擇</option>
-            <option value="釀酒師 Brewer" style="color:#ffc857;">釀酒師 Brewer</option>
-            <option value="舞者 Dancer" style="color:#ff80c8;">舞者 Dancer</option>
-            <option value="守護者 Guardian" style="color:#5be4ff;">守護者 Guardian</option>
-            <option value="獵人 Hunter" style="color:#78e38f;">獵人 Hunter</option>
-            <option value="治療者 Healer" style="color:#b6ffce;">治療者 Healer</option>
-            <option value="策士 Strategist" style="color:#c9a4ff;">策士 Strategist</option>
-            <option value="旅人 Traveler" style="color:#ffb480;">旅人 Traveler</option>
-            <option value="自由客 Free Spirit" style="color:#7af2ff;">自由客 Free Spirit</option>
-            <option value="其他 Custom" style="color:#d0d5e5;">其他 Custom</option>
+            <option value="釀酒師 Brewer">釀酒師 Brewer</option>
+            <option value="舞者 Dancer">舞者 Dancer</option>
+            <option value="守護者 Guardian">守護者 Guardian</option>
+            <option value="獵人 Hunter">獵人 Hunter</option>
+            <option value="治療者 Healer">治療者 Healer</option>
+            <option value="策士 Strategist">策士 Strategist</option>
+            <option value="旅人 Traveler">旅人 Traveler</option>
+            <option value="自由客 Free Spirit">自由客 Free Spirit</option>
+            <option value="其他 Custom">其他 Custom</option>
           </select>
 
           <label>元素屬性</label>
           <select id="element">
             <option value="">請選擇</option>
-            <option value="土・土地 Earth" style="color:#c8a15b;">土・土地 Earth</option>
-            <option value="火・釀酒 Fire" style="color:#ff6b6b;">火・釀酒 Fire</option>
-            <option value="風・舞蹈 Wind" style="color:#7fd5ff;">風・舞蹈 Wind</option>
-            <option value="水・情感 Water" style="color:#4aaeff;">水・情感 Water</option>
-            <option value="星・夢想 Star" style="color:#ffe27a;">星・夢想 Star</option>
-            <option value="影・沉思 Shadow" style="color:#a18bff;">影・沉思 Shadow</option>
+            <option value="土・土地 Earth">土・土地 Earth</option>
+            <option value="火・釀酒 Fire">火・釀酒 Fire</option>
+            <option value="風・舞蹈 Wind">風・舞蹈 Wind</option>
+            <option value="水・情感 Water">水・情感 Water</option>
+            <option value="星・夢想 Star">星・夢想 Star</option>
+            <option value="影・沉思 Shadow">影・沉思 Shadow</option>
           </select>
 
           <div class="stats-row">
@@ -743,10 +735,8 @@
     </div>
   </div>
 
-  <!-- Toast -->
   <div id="toast"></div>
 
-  <!-- 創角完成 HUD -->
   <div class="completion-overlay" id="completionOverlay">
     <div class="completion-panel">
       <div class="completion-avatar-wrap">
@@ -796,11 +786,10 @@
     </div>
   </div>
 
-  <!-- 🔊 背景音樂：同一頁 SPA，不會因畫面切換而中斷 -->
+  <!-- 背景音樂：同一頁 SPA，不會因畫面切換而中斷 -->
   <audio id="bgm" src="assets/music/bg.mp3" loop playsinline></audio>
 
   <script>
-    // === 基本工具 ===
     function showScreen(id){
       document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
       const el=document.getElementById(id);
@@ -813,32 +802,56 @@
       setTimeout(()=>t.classList.remove("show"),2000);
     }
 
-    // === 全域狀態 ===
-    const appState={
-      avatarDataUrl:null,
-      playerName:"",
-      playerPhone:"",
-      lastCharacter:null
-    };
+    const appState={ avatarDataUrl:null, playerName:"", playerPhone:"" };
 
-    // === 靈體立繪更新 ===
     const spiritPortrait=document.getElementById("spiritPortrait");
     const spiritName=document.getElementById("spiritName");
     const spiritElement=document.getElementById("spiritElement");
+    const spiritCard=document.getElementById("spiritCard");
+    const spiritGlowRing=document.getElementById("spiritGlowRing");
+
+    function applyElementRoleStyle(elementText, roleText){
+      let border="#ffc857";
+      let glow="rgba(255,200,135,.7)";
+      if(elementText.includes("火")){border="#ff6b6b";glow="rgba(255,107,107,.75)";}
+      else if(elementText.includes("水")){border="#4aaeff";glow="rgba(74,174,255,.75)";}
+      else if(elementText.includes("風")){border="#7fd5ff";glow="rgba(127,213,255,.75)";}
+      else if(elementText.includes("土")){border="#c8a15b";glow="rgba(200,161,91,.75)";}
+      else if(elementText.includes("星")){border="#ffe27a";glow="rgba(255,226,122,.8)";}
+      else if(elementText.includes("影")){border="#a18bff";glow="rgba(161,139,255,.75)";}
+
+      if(roleText.includes("釀酒師")) border="#ffc857";
+      else if(roleText.includes("舞者")) border="#ff80c8";
+      else if(roleText.includes("守護者")) border="#5be4ff";
+      else if(roleText.includes("獵人")) border="#78e38f";
+      else if(roleText.includes("治療者")) border="#b6ffce";
+      else if(roleText.includes("策士")) border="#c9a4ff";
+      else if(roleText.includes("旅人")) border="#ffb480";
+      else if(roleText.includes("自由客")) border="#7af2ff";
+
+      if(spiritCard){
+        spiritCard.style.borderColor=border;
+        spiritCard.style.boxShadow=`0 0 24px rgba(0,0,0,.9),0 0 32px ${glow}`;
+      }
+      if(spiritGlowRing){
+        spiritGlowRing.style.borderColor=border;
+        spiritGlowRing.style.boxShadow=`0 0 30px ${glow},0 0 40px ${glow}`;
+      }
+    }
 
     function updateSpiritPreviewFromForm(){
       const cn=document.getElementById("charName").value.trim();
       const el=document.getElementById("element").value.trim();
+      const role=document.getElementById("role").value.trim();
       spiritName.textContent=cn||"未命名角色";
       spiritElement.textContent=el||"無元素";
+      applyElementRoleStyle(el, role);
     }
 
-    // === Intro → Login ===
     document.getElementById("btnStartRitual").addEventListener("click",()=>{
       showScreen("screen-login");
     });
 
-    // === Avatar 上傳 → 變成靈體肖像 ===
     const avatarInput=document.getElementById("avatarInput");
     if(avatarInput&&spiritPortrait){
       avatarInput.addEventListener("change",e=>{
@@ -849,20 +862,20 @@
           const dataUrl=ev.target.result;
           appState.avatarDataUrl=dataUrl;
           spiritPortrait.src=dataUrl;
+          spiritPortrait.style.opacity="0.9";
           try{sessionStorage.setItem("playerAvatar",dataUrl);}catch(err){}
         };
         reader.readAsDataURL(f);
       });
     }
 
-    // 如果之前登入過，嘗試載入頭像
     const storedAvatar=sessionStorage.getItem("playerAvatar");
     if(storedAvatar){
       appState.avatarDataUrl=storedAvatar;
       spiritPortrait.src=storedAvatar;
+      spiritPortrait.style.opacity="0.9";
     }
 
-    // === Login 邏輯 ===
     const loginName=document.getElementById("loginName");
     const loginPhone=document.getElementById("loginPhone");
     const btnLogin=document.getElementById("btnLogin");
@@ -883,21 +896,18 @@
 
       loginLoading.style.display="block";
       loginLoadingFill.style.width="35%";
-
       setTimeout(()=>{loginLoadingFill.style.width="87%";},300);
 
       setTimeout(()=>{
         loginLoadingFill.style.width="100%";
         setTimeout(()=>{
           loginLoading.style.display="none";
-          // 儲存狀態
           appState.playerName=name;
           appState.playerPhone=phone;
           sessionStorage.setItem("playerName",name);
           sessionStorage.setItem("playerPhone",phone);
 
           alert("祖靈已接受你的登入。請前往創建角色。");
-          // 帶入創角頁
           document.getElementById("playerName").value=name;
           document.getElementById("playerPhone").value=phone;
           showScreen("screen-create");
@@ -905,13 +915,11 @@
       },900);
     });
 
-    // 若之前登入過，預填
     const prevName=sessionStorage.getItem("playerName");
     const prevPhone=sessionStorage.getItem("playerPhone");
     if(prevName) loginName.value=prevName;
     if(prevPhone) loginPhone.value=prevPhone;
 
-    // === 創角表單 ===
     const form=document.getElementById("createForm");
     const fields={
       playerName:document.getElementById("playerName"),
@@ -927,12 +935,10 @@
       message:document.getElementById("message")
     };
 
-    // 即時更新靈體卡資訊
-    ["charName","element"].forEach(id=>{
-      document.getElementById(id).addEventListener("input",updateSpiritPreviewFromForm);
-    });
+    document.getElementById("charName").addEventListener("input",updateSpiritPreviewFromForm);
+    document.getElementById("element").addEventListener("change",updateSpiritPreviewFromForm);
+    document.getElementById("role").addEventListener("change",updateSpiritPreviewFromForm);
 
-    // Google Form 設定
     const GOOGLE_FORM_URL="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfV50KRQIQW5MzlvodEHaNSRWxAbr9UNhioqpqRuA9ZftYbCg/formResponse";
     const GOOGLE_FIELDS={
       playerName:"entry.1692967079",
@@ -963,11 +969,7 @@
       fd.append(GOOGLE_FIELDS.message,data.message||"");
 
       try{
-        await fetch(GOOGLE_FORM_URL,{
-          method:"POST",
-          body:fd,
-          mode:"no-cors"
-        });
+        await fetch(GOOGLE_FORM_URL,{method:"POST",body:fd,mode:"no-cors"});
       }catch(e){
         console.warn("送出 Google 表單失敗（前端允許忽略）",e);
       }
@@ -991,7 +993,6 @@
         message:fields.message.value.trim()
       };
 
-      // 存在 localStorage：列表 + 最後角色
       const list=JSON.parse(localStorage.getItem("level23Characters")||"[]");
       list.push(data);
       localStorage.setItem("level23Characters",JSON.stringify(list));
@@ -1002,7 +1003,6 @@
       showCompletion(data);
     });
 
-    // === 創角完成 HUD ===
     function showCompletion(data){
       const overlay=document.getElementById("completionOverlay");
       if(!overlay) return;
@@ -1012,20 +1012,14 @@
       document.getElementById("cCha").textContent=data.stats.cha||"-";
       document.getElementById("cLuck").textContent=data.stats.luck||"-";
 
-      const miniName=document.getElementById("cmcCharName");
-      const miniRole=document.getElementById("cmcRole");
-      const miniElement=document.getElementById("cmcElement");
-      const miniTribe=document.getElementById("cmcTribe");
-      if(miniName) miniName.textContent=data.charName||"未命名角色";
-      if(miniRole) miniRole.textContent=data.role||"未設定職業";
-      if(miniElement) miniElement.textContent=data.element||"─";
-      if(miniTribe) miniTribe.textContent=data.tribe||"─";
+      document.getElementById("cmcCharName").textContent=data.charName||"未命名角色";
+      document.getElementById("cmcRole").textContent=data.role||"未設定職業";
+      document.getElementById("cmcElement").textContent=data.element||"─";
+      document.getElementById("cmcTribe").textContent=data.tribe||"─";
 
       const avatarImg=document.getElementById("completionAvatar");
-      if(avatarImg){
-        const storedAvatar=appState.avatarDataUrl||sessionStorage.getItem("playerAvatar");
-        if(storedAvatar) avatarImg.src=storedAvatar;
-      }
+      const storedAvatar=appState.avatarDataUrl||sessionStorage.getItem("playerAvatar");
+      if(avatarImg&&storedAvatar) avatarImg.src=storedAvatar;
 
       const role=data.role||"";
       const element=data.element||"";
@@ -1059,50 +1053,32 @@
         miniCard.style.boxShadow=`0 0 18px ${glow}`;
       }
 
+      applyElementRoleStyle(element, role);
       overlay.style.display="flex";
     }
 
     document.getElementById("goEntryCardBtn").addEventListener("click",()=>{
       document.getElementById("completionOverlay").style.display="none";
-      // 切換到角色卡畫面
       const last=localStorage.getItem("level23LastCharacter");
       let data=null;
       if(last){
         try{data=JSON.parse(last);}catch(e){}
       }
-      if(data){
-        applyEntryCard(data);
-      }
+      if(data) applyEntryCard(data);
       showScreen("screen-entry-card");
     });
 
-    // === 角色卡畫面套資料 ===
     function applyEntryCard(data){
-      const charNameEl=document.getElementById("cardCharName");
-      const playerEl=document.getElementById("cardPlayerName");
-      const tribeEl=document.getElementById("cardTribe");
-      const roleEl=document.getElementById("cardRole");
-      const elemEl=document.getElementById("cardElement");
-      const card=document.getElementById("entryCard");
-      if(!data){
-        charNameEl.textContent="尚未建立角色";
-        playerEl.textContent="請先完成角色創建";
-        tribeEl.textContent="-";
-        roleEl.textContent="─";
-        elemEl.textContent="─";
-        return;
-      }
-      charNameEl.textContent=data.charName||"未命名角色";
-      playerEl.textContent=data.playerName||"Player";
-      tribeEl.textContent=data.tribe||"─";
-      roleEl.textContent=data.role||"─";
-      elemEl.textContent=data.element||"─";
+      document.getElementById("cardCharName").textContent=data.charName||"未命名角色";
+      document.getElementById("cardPlayerName").textContent=data.playerName||"Player";
+      document.getElementById("cardTribe").textContent=data.tribe||"─";
+      document.getElementById("cardRole").textContent=data.role||"─";
+      document.getElementById("cardElement").textContent=data.element||"─";
 
       const role=data.role||"";
       const element=data.element||"";
       let border="#ffc857";
       let glow="rgba(255,200,135,.7)";
-
       if(element.includes("火")){border="#ff6b6b";glow="rgba(255,107,107,.75)";}
       else if(element.includes("水")){border="#4aaeff";glow="rgba(74,174,255,.75)";}
       else if(element.includes("風")){border="#7fd5ff";glow="rgba(127,213,255,.75)";}
@@ -1119,6 +1095,7 @@
       else if(role.includes("旅人")) border="#ffb480";
       else if(role.includes("自由客")) border="#7af2ff";
 
+      const card=document.getElementById("entryCard");
       if(card){
         card.style.borderColor=border;
         card.style.boxShadow=`0 0 26px ${glow},0 0 34px ${glow}`;
@@ -1129,11 +1106,10 @@
       showScreen("screen-create");
     });
 
-    // === BGM：同一頁，不會因畫面切換而重播 ===
     (function(){
       const bgm=document.getElementById("bgm");
       if(!bgm) return;
-      bgm.volume=0.15; // 不要太大聲
+      bgm.volume=0.15;
       function resumeBgm(){
         if(bgm.paused){
           bgm.play().catch(()=>{});
