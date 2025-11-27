@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LEVEL 23 ─ 角色創建</title>
+  <style>
+    :root{--neon:#5be4ff;--gold:#ffc857;}
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;height:100%;}
+    body{
+      font-family:"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      background:radial-gradient(circle at top,#1b2742 0,#050816 42%,#02030a 100%);
+      color:#f0f4ff;overflow:hidden;position:relative;
+    }
+    .stars{
+      position:fixed;inset:0;
+      background:radial-gradient(circle,rgba(255,255,255,.25) 1px,transparent 1px);
+      background-size:3px 3px;opacity:.2;
+      animation:starDrift 40s linear infinite;
+      pointer-events:none;z-index:0;
+    }
+    @keyframes starDrift{from{transform:translateY(0);}to{transform:translateY(-900px);}}
+    .tribal{
+      position:fixed;inset:0;
+      background:
+        radial-gradient(circle at 0 0,rgba(91,228,255,.35),transparent 55%),
+        radial-gradient(circle at 100% 100%,rgba(255,200,87,.3),transparent 55%),
+        url("assets/patterns/puyuma.png") center/38% repeat;
+      opacity:.14;mix-blend-mode:screen;
+      animation:tribalPulse 7s ease-in-out infinite;
+      pointer-events:none;z-index:0;
+    }
+    @keyframes tribalPulse{0%,100%{opacity:.08;filter:blur(0);}50%{opacity:.22;filter:blur(1px);}}
+    .page{
+      position:relative;z-index:2;height:100%;
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;
+    }
+    .card{
+      width:min(1020px,100%);max-height:92vh;
+      background:linear-gradient(135deg,rgba(10,13,30,.96),rgba(7,6,20,.96));
+      border-radius:20px;border:1px solid rgba(91,228,255,.7);
+      box-shadow:0 0 26px rgba(0,0,0,.8),0 0 40px rgba(91,228,255,.45);
+      display:grid;grid-template-columns:1.05fr 1.4fr;
+      gap:22px;padding:22px 24px;backdrop-filter:blur(16px);
+    }
+    @media(max-width:900px){
+      body{overflow:auto;}
+      .page{align-items:flex-start;padding-top:22px;}
+      .card{grid-template-columns:1fr;max-height:none;}
+    }
+    .left{border-right:1px solid rgba(255,255,255,.08);padding-right:16px;}
+    @media(max-width:900px){.left{border-right:none;border-bottom:1px solid rgba(255,255,255,.08);padding-right:0;padding-bottom:14px;margin-bottom:10px;}}
+    .right{padding-left:4px;}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 10px;border-radius:999px;
+      border:1px solid rgba(91,228,255,.8);
+      background:radial-gradient(circle at 0 0,rgba(91,228,255,.4),transparent 60%);
+      font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--neon);
+    }
+    h1{
+      margin:8px 0 4px;font-size:24px;color:#fff7dd;
+      text-shadow:0 0 10px rgba(91,228,255,.7),0 0 24px rgba(255,200,87,.6);
+    }
+    .subtitle{font-size:13px;opacity:.88;margin-bottom:14px;}
+    .player-meta{font-size:13px;opacity:.88;margin-bottom:14px;}
+    .player-meta span.label{opacity:.7;}
+    .preview-card{
+      margin-top:12px;padding:14px;border-radius:14px;
+      border:1px solid rgba(255,200,87,.7);
+      background:
+        radial-gradient(circle at top,rgba(255,200,87,.25),transparent 60%),
+        radial-gradient(circle at bottom,rgba(91,228,255,.18),transparent 60%),
+        rgba(5,5,12,.9);
+      font-size:13px;box-shadow:0 0 18px rgba(0,0,0,.7);
+    }
+    .preview-line{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+    .preview-label{opacity:.75;}
+    .preview-value{text-align:right;font-weight:500;}
+    form{
+      display:grid;grid-template-columns:1fr 1fr;
+      gap:10px 18px;font-size:13px;
+      max-height:64vh;overflow-y:auto;padding-right:4px;
+    }
+    @media(max-width:900px){form{grid-template-columns:1fr;max-height:none;}}
+    .field{display:flex;flex-direction:column;gap:4px;}
+    label{font-size:12px;opacity:.9;}
+    input[type="text"],input[type="number"],textarea,select{
+      border-radius:9px;border:1px solid rgba(112,138,204,.9);
+      background:radial-gradient(circle at top,rgba(91,228,255,.07),rgba(6,10,25,.96));
+      padding:8px 10px;color:#f5f7ff;font-size:13px;outline:none;
+    }
+    textarea{resize:vertical;min-height:70px;max-height:130px;}
+    input:focus,textarea:focus,select:focus{border-color:var(--neon);box-shadow:0 0 0 1px rgba(91,228,255,.4);}
+    .field-title{
+      grid-column:1/-1;margin-top:6px;font-size:11px;
+      opacity:.8;text-transform:uppercase;letter-spacing:1px;
+    }
+    .stats-row{
+      grid-column:1/-1;
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
+    }
+    @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    .stat-box{
+      padding:7px 8px;border-radius:10px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(8,12,30,.9);font-size:11px;
+      display:flex;flex-direction:column;gap:3px;
+    }
+    .stat-box input{padding:4px 6px;font-size:12px;}
+    .actions{
+      grid-column:1/-1;margin-top:8px;
+      display:flex;justify-content:flex-end;gap:8px;
+    }
+    .btn{
+      border-radius:999px;padding:8px 16px;border:none;
+      font-size:13px;cursor:pointer;
+      display:inline-flex;align-items:center;gap:6px;
+    }
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.35);color:#e3ecff;}
+    .btn-primary{
+      background:linear-gradient(135deg,var(--gold),var(--neon));
+      color:#050816;font-weight:600;
+      box-shadow:0 0 16px rgba(255,200,87,.6),0 0 20px rgba(91,228,255,.5);
+    }
+    .hint{grid-column:1/-1;margin-top:4px;font-size:11px;opacity:.75;text-align:right;}
+    .toast{
+      position:fixed;right:16px;bottom:16px;
+      padding:8px 14px;border-radius:999px;
+      background:rgba(12,180,120,.14);
+      border:1px solid rgba(12,180,120,.7);
+      color:#d8ffe9;font-size:12px;
+      backdrop-filter:blur(8px);
+      opacity:0;transform:translateY(8px);
+      pointer-events:none;transition:opacity .25s,transform .25s;
+      z-index:10;
+    }
+    .toast.show{opacity:1;transform:translateY(0);}
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+  <div class="tribal"></div>
+
+  <div class="page">
+    <div class="card">
+      <div class="left">
+        <div class="badge">LEVEL 23 · CHARACTER CREATION</div>
+        <h1>角色創建儀式</h1>
+        <div class="subtitle">
+          你已通過登入門檻，現在請替自己完成一張 <strong>Level 23 角色卡</strong>。<br>
+          這些資訊之後可以用在名牌、分組，或活動結束後的角色圖鑑。
+        </div>
+        <div class="player-meta">
+          <div><span class="label">登入玩家：</span><span id="metaName">Player</span></div>
+          <div><span class="label">聯絡電話：</span><span id="metaPhone">-</span></div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-line">
+            <span class="preview-label">角色名稱：</span>
+            <span class="preview-value" id="pvCharName">尚未輸入</span>
+          </div>
+          <div class="preview-line">
+            <span class="preview-label">職業 / 身分：</span>
+            <span class="preview-value" id="pvRole">尚未選擇</span>
+          </div>
+          <div class="preview-line">
+            <span class="preview-label">元素屬性：</span>
+            <span class="preview-value" id="pvElement">尚未選擇</span>
+          </div>
+          <div class="preview-line">
+            <span class="preview-label">來自部落 / 地點：</span>
+            <span class="preview-value" id="pvTribe">尚未設定</span>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <form id="characterForm">
+          <div class="field">
+            <label for="charName">角色名稱</label>
+            <input id="charName" type="text" placeholder="例：Kutra 釀酒師、小米守護者…" />
+          </div>
+          <div class="field">
+            <label for="tribe">部落 / 來自哪裡</label>
+            <input id="tribe" type="text" placeholder="例：卑南族・初鹿部落 / 中原大學…" />
+          </div>
+          <div class="field">
+            <label for="role">職業 / 身分</label>
+            <select id="role">
+              <option value="">請選擇</option>
+              <option value="釀酒師 Brewer">釀酒師 Brewer</option>
+              <option value="舞者 Dancer">舞者 Dancer</option>
+              <option value="守護者 Guardian">守護者 Guardian</option>
+              <option value="獵人 Hunter">獵人 Hunter</option>
+              <option value="治療者 Healer">治療者 Healer</option>
+              <option value="策士 Strategist">策士 Strategist</option>
+              <option value="旅人 Traveler">旅人 Traveler</option>
+              <option value="自由客 Free Spirit">自由客 Free Spirit</option>
+              <option value="其他 Custom">其他 Custom</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="element">元素屬性</label>
+            <select id="element">
+              <option value="">請選擇</option>
+              <option value="土・土地 Earth">土・土地 Earth</option>
+              <option value="火・釀酒 Fire">火・釀酒 Fire</option>
+              <option value="風・舞蹈 Wind">風・舞蹈 Wind</option>
+              <option value="水・情感 Water">水・情感 Water</option>
+              <option value="星・夢想 Star">星・夢想 Star</option>
+              <option value="影・沉思 Shadow">影・沉思 Shadow</option>
+            </select>
+          </div>
+          <div class="field-title">能力值分配（0–10，自由加點）</div>
+          <div class="stats-row">
+            <div class="stat-box">
+              <span>力量 STR</span>
+              <input id="str" type="number" min="0" max="10" value="3" />
+            </div>
+            <div class="stat-box">
+              <span>智慧 INT</span>
+              <input id="int" type="number" min="0" max="10" value="3" />
+            </div>
+            <div class="stat-box">
+              <span>魅力 CHA</span>
+              <input id="cha" type="number" min="0" max="10" value="3" />
+            </div>
+            <div class="stat-box">
+              <span>幸運 LUCK</span>
+              <input id="luck" type="number" min="0" max="10" value="3" />
+            </div>
+          </div>
+          <div class="field-title">想說的話（給壽星 / 部落 / 這次 Level 23 儀式）</div>
+          <div class="field" style="grid-column:1/-1;">
+            <textarea id="message" placeholder="寫一段話，可以是祝福、回憶、或是對這次聚會的感想…"></textarea>
+          </div>
+          <div class="actions">
+            <a href="index.html" class="btn btn-ghost" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">← 回到登入頁</a>
+            <button type="submit" class="btn btn-primary">儲存角色資訊 ✔</button>
+            <button type="button" class="btn btn-ghost" id="btnDownloadCard">下載角色卡 PNG</button>
+          </div>
+          <div class="hint">資料會暫存在你的瀏覽器（localStorage），並送到 Google 表單供你整理。</div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast">角色資訊已儲存 ✔</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    const playerName=sessionStorage.getItem("playerName")||"Player";
+    const playerPhone=sessionStorage.getItem("playerPhone")||"";
+    document.getElementById("metaName").textContent=playerName;
+    document.getElementById("metaPhone").textContent=playerPhone||"-";
+    document.getElementById("charName").value=playerName;
+
+    const charNameInput=document.getElementById("charName");
+    const tribeInput=document.getElementById("tribe");
+    const roleSelect=document.getElementById("role");
+    const elementSelect=document.getElementById("element");
+    const pvCharName=document.getElementById("pvCharName");
+    const pvRole=document.getElementById("pvRole");
+    const pvElement=document.getElementById("pvElement");
+    const pvTribe=document.getElementById("pvTribe");
+
+    function updatePreview(){
+      pvCharName.textContent=charNameInput.value||"尚未輸入";
+      pvRole.textContent=roleSelect.value||"尚未選擇";
+      pvElement.textContent=elementSelect.value||"尚未選擇";
+      pvTribe.textContent=tribeInput.value||"尚未設定";
+    }
+    [charNameInput,tribeInput,roleSelect,elementSelect].forEach(el=>{
+      el.addEventListener("input",updatePreview);
+      el.addEventListener("change",updatePreview);
+    });
+    updatePreview();
+
+    const GOOGLE_FORM_URL="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfV50KRQIQW5MzlvodEHaNSRWxAbr9UNhioqpqRuA9ZftYbCg/formResponse";
+    const GOOGLE_FIELDS={
+      playerName:"entry.1692967079",
+      playerPhone:"entry.1724405603",
+      charName:"entry.1815456712",
+      tribe:"entry.70379778",
+      role:"entry.71969897",
+      element:"entry.227903663",
+      str:"entry.1290922171",
+      int:"entry.557939827",
+      cha:"entry.1703247253",
+      luck:"entry.1483548557",
+      message:"entry.232807868"
+    };
+
+    function showToast(msg){
+      const t=document.getElementById("toast");
+      t.textContent=msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"),2000);
+    }
+    function goBack(){window.location.href="index.html";}
+
+    async function submitToGoogle(data){
+      const fd=new FormData();
+      fd.append(GOOGLE_FIELDS.playerName,data.playerName);
+      fd.append(GOOGLE_FIELDS.playerPhone,data.playerPhone);
+      fd.append(GOOGLE_FIELDS.charName,data.charName);
+      fd.append(GOOGLE_FIELDS.tribe,data.tribe);
+      fd.append(GOOGLE_FIELDS.role,data.role);
+      fd.append(GOOGLE_FIELDS.element,data.element);
+      fd.append(GOOGLE_FIELDS.str,data.stats.str);
+      fd.append(GOOGLE_FIELDS.int,data.stats.int);
+      fd.append(GOOGLE_FIELDS.cha,data.stats.cha);
+      fd.append(GOOGLE_FIELDS.luck,data.stats.luck);
+      fd.append(GOOGLE_FIELDS.message,data.message);
+      try{
+        await fetch(GOOGLE_FORM_URL,{method:"POST",mode:"no-cors",body:fd});
+      }catch(e){console.warn("Google 表單送出錯誤",e);}
+    }
+
+    const form=document.getElementById("characterForm");
+    form.addEventListener("submit",async e=>{
+      e.preventDefault();
+      const data={
+        playerName,playerPhone,
+        charName:charNameInput.value,
+        tribe:tribeInput.value,
+        role:roleSelect.value,
+        element:elementSelect.value,
+        stats:{
+          str:document.getElementById("str").value,
+          int:document.getElementById("int").value,
+          cha:document.getElementById("cha").value,
+          luck:document.getElementById("luck").value
+        },
+        message:document.getElementById("message").value,
+        savedAt:new Date().toISOString()
+      };
+      const list=JSON.parse(localStorage.getItem("level23Characters")||"[]");
+      list.push(data);
+      localStorage.setItem("level23Characters",JSON.stringify(list));
+      await submitToGoogle(data);
+      showToast("角色資訊已儲存 ✔");
+      // 若要直接跳圖鑑可改成：window.location.href="gallery.html";
+    });
+
+// 一鍵下載角色卡（preview-card → PNG）
+const downloadBtn=document.getElementById("btnDownloadCard");
+if(downloadBtn){
+  downloadBtn.addEventListener("click",async()=>{
+    const card=document.querySelector(".preview-card");
+    if(!card){
+      alert("找不到角色卡區塊，請確認頁面載入是否完整。");
+      return;
+    }
+    if(typeof html2canvas==="undefined"){
+      alert("下載功能元件尚未載入，請稍後再試或檢查網路。");
+      return;
+    }
+    try{
+      const scale=window.devicePixelRatio||2;
+      const canvas=await html2canvas(card,{
+        scale,
+        backgroundColor:"#050816",
+        useCORS:true
+      });
+      const link=document.createElement("a");
+      const name=document.getElementById("charName").value||"level23-card";
+      link.download=`${name}-entry-card.png`;
+      link.href=canvas.toDataURL("image/png");
+      link.click();
+    }catch(e){
+      console.error(e);
+      alert("下載角色卡時發生錯誤，請再試一次。");
+    }
+  });
+}
+
+  </script>
+</body>
+</html>

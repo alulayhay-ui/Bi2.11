@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Level 23 角色圖鑑（後台專用）</title>
+  <style>
+    :root{
+      --bg:#050816;
+      --card:#0f172a;
+      --accent:#5be4ff;
+      --gold:#ffc857;
+    }
+    *{box-sizing:border-box;}
+    html,body{
+      margin:0;padding:0;
+      background:radial-gradient(circle at top,#1b2742 0,#050816 50%,#000 100%);
+      color:#e5edff;
+      font-family:"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    }
+    body{
+      min-height:100vh;
+      padding:16px;
+    }
+    h1{margin:0 0 4px;font-size:22px;}
+    .sub{font-size:12px;opacity:.8;margin-bottom:12px;}
+    .top-bar{
+      display:flex;flex-wrap:wrap;
+      align-items:center;justify-content:space-between;
+      gap:8px;margin-bottom:12px;
+    }
+    input[type="text"]{
+      padding:6px 8px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(5,10,25,.9);
+      color:#fff;font-size:12px;outline:none;
+    }
+    .chips{display:flex;flex-wrap:wrap;gap:6px;font-size:11px;}
+    .chip{
+      padding:3px 8px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.25);
+      cursor:pointer;opacity:.9;
+    }
+    .chip.active{border-color:var(--accent);color:var(--accent);}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:12px;margin-top:8px;
+    }
+    .card{
+      background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(5,10,24,.98));
+      border-radius:16px;padding:10px 11px;
+      border:1px solid rgba(148,163,255,.4);
+      box-shadow:0 0 16px rgba(15,23,42,.9);
+      font-size:12px;position:relative;
+    }
+    .card-header{
+      display:flex;justify-content:space-between;
+      gap:6px;margin-bottom:4px;
+    }
+    .card-title{font-weight:600;font-size:13px;color:#fff7dd;}
+    .card-time{font-size:11px;opacity:.7;text-align:right;white-space:nowrap;}
+    .row{display:flex;justify-content:space-between;gap:6px;margin:1px 0;}
+    .label{opacity:.78;}
+    .value{text-align:right;}
+    .badge{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:2px 6px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.35);
+      font-size:10px;margin-left:2px;
+    }
+    .role-badge{border-color:rgba(255,255,255,.4);}
+    .element-badge{border-color:rgba(91,228,255,.75);}
+    .stats{margin-top:4px;font-size:11px;opacity:.88;}
+    .msg{
+      margin-top:4px;font-size:11px;opacity:.9;
+      border-top:1px dashed rgba(148,163,255,.5);
+      padding-top:4px;word-break:break-all;
+    }
+    .counter{font-size:11px;opacity:.8;}
+    .highlight-fire{border-color:#ff6b6b;}
+    .highlight-water{border-color:#4aaeff;}
+    .highlight-wind{border-color:#7fd5ff;}
+    .highlight-earth{border-color:#c8a15b;}
+    .highlight-star{border-color:#ffe27a;}
+    .highlight-shadow{border-color:#a18bff;}
+  </style>
+</head>
+<body>
+  <h1>Level 23 角色圖鑑（後台專用）</h1>
+  <div class="sub">
+    給壽星 / 工作人員看的角色總覽頁面，請勿對外公開 QR code。<br/>
+    使用方式：到你的 Google 試算表 →「檔案」→「分享」→「發佈到網路」→ 選「CSV」→ 複製連結，貼到下面的 SHEET_CSV_URL。
+  </div>
+
+  <div class="top-bar">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+      <span class="counter" id="counter">尚未載入資料</span>
+      <input type="text" id="search" placeholder="搜尋 角色 / 玩家 / 部落 / 訊息..." />
+    </div>
+    <div class="chips" id="elementFilter">
+      <div class="chip active" data-element="">全部元素</div>
+      <div class="chip" data-element="土">土</div>
+      <div class="chip" data-element="火">火</div>
+      <div class="chip" data-element="風">風</div>
+      <div class="chip" data-element="水">水</div>
+      <div class="chip" data-element="星">星</div>
+      <div class="chip" data-element="影">影</div>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <script>
+    // TODO：把這裡改成你「發佈成 CSV」得到的公開網址
+    const SHEET_CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_URL_HERE";
+
+    // 欄位順序：時間戳記, 玩家姓名, 聯絡電話, 角色名稱, 部落/來自哪裡, 職業/身分, 元素屬性, STR, INT, CHA, LUCK, 想說的話
+    const COL = {
+      timestamp:0,
+      playerName:1,
+      playerPhone:2,
+      charName:3,
+      tribe:4,
+      role:5,
+      element:6,
+      str:7,
+      int:8,
+      cha:9,
+      luck:10,
+      message:11
+    };
+
+    const grid=document.getElementById("grid");
+    const counter=document.getElementById("counter");
+    const searchInput=document.getElementById("search");
+    const elementFilter=document.getElementById("elementFilter");
+    let allRows=[];
+    let currentElementFilter="";
+
+    function parseCSV(text){
+      const lines=text.trim().split(/\r?\n/);
+      if(lines.length<=1) return [];
+      const rows=[];
+      for(let i=1;i<lines.length;i++){
+        const line=lines[i];
+        const cells=line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(c=>c.replace(/^"|"$/g,""));
+        rows.push(cells);
+      }
+      return rows;
+    }
+
+    function render(){
+      const q=searchInput.value.trim().toLowerCase();
+      let rows=allRows.slice();
+      if(currentElementFilter){
+        rows=rows.filter(r=>(r[COL.element]||"").includes(currentElementFilter));
+      }
+      if(q){
+        rows=rows.filter(r=>{
+          const t=(r[COL.charName]+r[COL.playerName]+r[COL.tribe]+r[COL.role]+r[COL.message]).toLowerCase();
+          return t.includes(q);
+        });
+      }
+      counter.textContent=rows.length?`共 ${rows.length} 個角色`:"目前沒有角色或尚未載入資料";
+      grid.innerHTML="";
+
+      rows.forEach(r=>{
+        const element=r[COL.element]||"";
+        const role=r[COL.role]||"";
+        let highlightClass="";
+        if(element.includes("火")) highlightClass="highlight-fire";
+        else if(element.includes("水")) highlightClass="highlight-water";
+        else if(element.includes("風")) highlightClass="highlight-wind";
+        else if(element.includes("土")) highlightClass="highlight-earth";
+        else if(element.includes("星")) highlightClass="highlight-star";
+        else if(element.includes("影")) highlightClass="highlight-shadow";
+
+        const card=document.createElement("div");
+        card.className="card "+highlightClass;
+        card.innerHTML=`
+          <div class="card-header">
+            <div>
+              <div class="card-title">${r[COL.charName]||"未命名角色"}</div>
+              <div style="font-size:11px;opacity:.8;">玩家：${r[COL.playerName]||"-"}</div>
+            </div>
+            <div class="card-time">${r[COL.timestamp]||""}</div>
+          </div>
+          <div class="row">
+            <div class="label">來自：</div>
+            <div class="value">${r[COL.tribe]||"─"}</div>
+          </div>
+          <div class="row">
+            <div class="label">職業：</div>
+            <div class="value"><span class="badge role-badge">${role||"─"}</span></div>
+          </div>
+          <div class="row">
+            <div class="label">元素：</div>
+            <div class="value"><span class="badge element-badge">${element||"─"}</span></div>
+          </div>
+          <div class="stats">
+            STR ${r[COL.str]||"-"} / INT ${r[COL.int]||"-"} / CHA ${r[COL.cha]||"-"} / LUCK ${r[COL.luck]||"-"}
+          </div>
+          <div class="msg">${(r[COL.message]||"").replace(/\n/g,"<br>")}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function loadCSV(){
+      if(!SHEET_CSV_URL || SHEET_CSV_URL.startsWith("PASTE_")){
+        counter.textContent="請先在程式碼中設定 SHEET_CSV_URL（Google 試算表發佈成 CSV）。";
+        return;
+      }
+      counter.textContent="載入中...";
+      try{
+        const res=await fetch(SHEET_CSV_URL);
+        const text=await res.text();
+        allRows=parseCSV(text);
+        render();
+      }catch(e){
+        console.error(e);
+        counter.textContent="載入失敗，請確認 CSV 連結是否正確且為公開。";
+      }
+    }
+
+    searchInput.addEventListener("input",render);
+    elementFilter.addEventListener("click",e=>{
+      const chip=e.target.closest(".chip");
+      if(!chip) return;
+      elementFilter.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+      chip.classList.add("active");
+      currentElementFilter=chip.dataset.element||"";
+      render();
+    });
+
+    loadCSV();
+  </script>
+</body>
+</html>
